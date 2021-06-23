@@ -626,6 +626,101 @@
                 Transaction().test()
 
 
+-   case: reverse_foreign_key_relationship_for_abstract_models
+    main: |
+        from myapp.models import Transaction
+    installed_apps:
+        - myapp
+    files:
+        -   path: myapp/__init__.py
+        -   path: myapp/models.py
+            content: |
+                from django.db import models
+                class Transaction(models.Model):
+                    pass
+                class AbstractLog(models.Model):
+                    class Meta:
+                        abstract=True
+                class TransactionLog(AbstractLog):
+                    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name="logs")
+
+                Transaction().logs
+
+
+-   case: reverse_foreign_key_relationship_for_abstract_models_with_custom_queryset
+    main: |
+        from myapp.models import Transaction
+    installed_apps:
+        - myapp
+    files:
+        -   path: myapp/__init__.py
+        -   path: myapp/models.py
+            content: |
+                from django.db import models
+                class AbstractLogQuerySet(models.QuerySet):
+                    pass
+                class Transaction(models.Model):
+                    pass
+                class AbstractLog(models.Model):
+                    objects = AbstractLogQuerySet.as_manager()
+                    class Meta:
+                        abstract=True
+                class TransactionLog(AbstractLog):
+                    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name="logs")
+
+                Transaction().logs
+
+
+-   case: reverse_foreign_key_relationship_for_abstract_models_with_custom_manager
+    main: |
+        from myapp.models import Transaction
+    installed_apps:
+        - myapp
+    files:
+        -   path: myapp/__init__.py
+        -   path: myapp/models.py
+            content: |
+                from django.db import models
+                class AbstractLogManager(models.Manager):
+                    pass
+                class Transaction(models.Model):
+                    pass
+                class AbstractLog(models.Model):
+                    objects = AbstractLogManager()
+                    class Meta:
+                        abstract=True
+                class TransactionLog(AbstractLog):
+                    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name="logs")
+
+                Transaction().logs
+
+
+-   case: reverse_foreign_key_relationship_for_abstract_models_with_custom_manager_and_queryset
+    main: |
+        from myapp.models import Transaction
+    installed_apps:
+        - myapp
+    files:
+        -   path: myapp/__init__.py
+        -   path: myapp/models.py
+            content: |
+                from django.db import models
+                class AbstractLogQuerySet(models.QuerySet):
+                    pass
+                class AbstractLogManager(models.Manager):
+                    pass
+                class Transaction(models.Model):
+                    pass
+                class AbstractLog(models.Model):
+                    objects = AbstractLogManager.from_queryset(AbstractLogQuerySet)()
+                    class Meta:
+                        abstract=True
+                class TransactionLog(AbstractLog):
+                    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name="logs")
+
+                Transaction().logs
+
+
 -   case: resolve_primary_keys_for_foreign_keys_with_abstract_self_model
     main: |
         from myapp.models import User
